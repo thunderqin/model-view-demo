@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta content="width=device-width,maximum-scale=1.0,minimum-scale=1.0,initial-scale=1.0,user-scalable=no" name="viewport">
+</head>
+<body>
+	<div id="app">
+		<p>
+			看这里：<span>{{name}}</span>
+		</p>
+	</div>
+	<div id="input-wrap">
+		Val: <input type="text" id="input">
+	</div>
+
+	<script type="text/javascript">
+		class gl{
+			constructor(options){
+				this.$data = options.data
+				this.$tpl = options.template
+				this.$el = options.el
+				this.$d = this.$setData(this.$data)
+				this._render(this.$tpl,this.$data)
+			}
+
+			$setData(obj,fn){
+				let self = this
+				return new Proxy(obj,{
+					set(target,property,value){
+						target[property] = value
+						console.log('change')
+						self._render(self.$tpl,self.$data)
+						return true
+					},
+					get(target, key, receiver){
+						/*console.log(target)
+						console.log(key)
+						console.log(receiver)*/
+						return target[key]
+					}
+				})
+			}
+
+			_render(tplString,data){
+				let html = this._replaceFun(tplString,data)
+				document.querySelector(this.$el).innerHTML = html
+			}
+
+			_replaceFun(tpl,data){
+				
+				let reg = new RegExp('{{([^{}]*)}}','g')
+				return tpl.replace(reg,(a,b)=>{
+					return data[b]
+				})
+			}
+		}
+
+		let tpl = document.querySelector('#app').innerHTML
+		// 创建对象
+		let g = new gl({
+			data:{name:'guolei'},
+			template: tpl,
+			el: '#app',
+		})
+		// 只需要修改data  后期加上双向自动绑定 v-model（自定义指令） 
+		document.querySelector('#input').oninput =(e)=>{
+				g.$d.name = e.target.value;
+		}
+	</script>
+
+</body>
+</html>
